@@ -1,13 +1,19 @@
-import SQLite from 'react-native-sqlite-storage';
+import * as SQLite from 'expo-sqlite';
 
-const db = SQLite.openDatabase(
-  {
-    name: 'remind-me-db',
-    location: 'default',
-  },
-  ()    => { /* success callback */ },
-  error => { /* error callback   */ },
-);
+// import SQLite from 'react-native-sqlite-storage';
+
+// const db = SQLite.openDatabase({name: 'my.db', location: 'default'},
+//     ()    => { /* success callback */ },
+//   error => { /* error callback   */ },
+// );
+// const db = SQLite.openDatabase(
+//   {
+//     name: 'remind-me-db',
+//     location: 'default',
+//   },
+//   ()    => { /* success callback */ },
+//   error => { /* error callback   */ },
+// );
 
 // db.transaction((tx) => {
   // tx.executeSql('CREATE TABLE IF NOT EXISTS reminders ( id INTEGER PRIMARY KEY NOT NULL,        text TEXT)', [], (tx, results) => {
@@ -49,31 +55,41 @@ const db = SQLite.openDatabase(
 
 
 class RemindersModel {
-  constructor({ log }) { Object.assign(this, { log }); }
+  constructor({ log }) { Object.assign(this, { log }); } 
+  
+  init_db() {
+    console.log(this.log)
+    this.log.debug('Connecting to database');
+    this.db = SQLite.openDatabase('remind-me-db.sqlite');
+    this.db.transaction((tx) => {
+      tx.executeSql(
+        `CREATE TABLE IF NOT EXISTS reminders (
+            id INTEGER PRIMARY KEY NOT NULL,
+            when     INT,
+            nag      BOOL,
+            reminder TEXT
+        );`
+      );
+    });
+  }
 
-  create(reminder) {
+  create({reminder, when, nag}) {
+      this.log.debug(`Creating reminder: ${reminder}`);
+      this.db.transaction((tx) => {
+        // when is free text like "tomorrow" and we need to compute Unix time from that
+        // nag is a boolean
+        // reminder is the text of the reminder
+        when = chrono.parseDate(when);
+        this.log.debug(`Parsed date: ${when}`);
 
 
-    // console.log('test');
-    // return fetch(API_URL, {
-    //   method: 'POST',
-    //   headers: {
-    //     'Content-Type': 'application/json',
-    //     'Accept':       'application/json',
-    //   },
-    //   body: JSON.stringify({
-    //     reminder: text,
-    //   }),
-    // })
-    // .then((response) => response.json())
-    // .then((data) => {
-    //   console.log('Success:', data);
-    //   return data;
-    // })
-    // .catch((error) => {
-    //   console.error('Error:', error);
-    //   throw error;
-    // });
+        
+
+        // tx.executeSql(
+        //   `INSERT INTO reminders (when, nag, reminder) VALUES (?, ?, ?);`,
+        //   [reminder]
+        // );
+      });
   }
 }
 
